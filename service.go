@@ -2,10 +2,12 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
+	"github.com/RoanBrand/EquityTracker/scheduler"
 	"log"
 	"os"
 	"os/exec"
-	"encoding/json"
+	"time"
 )
 
 type stockDetails struct {
@@ -30,4 +32,13 @@ func main() {
 
 	log.Printf("%#v", results)
 	log.Println(results)
+
+	scheduler := scheduler.NewScheduler(time.Second*5, func(now time.Time) {
+		log.Println("Scheduler callback triggered @ ", now)
+	})
+	defer scheduler.Stop()
+
+	for {
+		time.Sleep(time.Second)
+	}
 }
