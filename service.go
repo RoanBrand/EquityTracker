@@ -33,7 +33,7 @@ func main() {
 	log.Printf("%#v", results)
 	log.Println(results)
 
-	scheduler := scheduler.NewScheduler(time.Second*5, func(now time.Time) {
+	scheduler := scheduler.NewScheduler(time.Minute, func(now time.Time) {
 		log.Println("Scheduler callback triggered @ ", now)
 	})
 	defer scheduler.Stop()
