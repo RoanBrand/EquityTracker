@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"sync"
 	"time"
 )
 
@@ -18,7 +19,20 @@ type stockDetails struct {
 }
 
 func main() {
-	query := exec.Command("python", "query.py", "EOH")
+	w := sync.WaitGroup{}
+	scheduler := scheduler.NewScheduler(time.Minute, func(now time.Time) {
+		results := getStockPrices([]string{"EOH"})
+		log.Printf("%v @ %v", results, now)
+	})
+	defer scheduler.Stop()
+
+	w.Add(1)
+	w.Wait()
+}
+
+func getStockPrices(names []string) []stockDetails {
+	pyArgs := append([]string{"query.py"}, names...)
+	query := exec.Command("python", pyArgs...)
 	query.Stderr = os.Stderr
 	queryOutput := &bytes.Buffer{}
 	query.Stdout = queryOutput
@@ -29,16 +43,5 @@ func main() {
 
 	var results []stockDetails
 	json.Unmarshal(queryOutput.Bytes(), &results)
-
-	log.Printf("%#v", results)
-	log.Println(results)
-
-	scheduler := scheduler.NewScheduler(time.Minute, func(now time.Time) {
-		log.Println("Scheduler callback triggered @ ", now)
-	})
-	defer scheduler.Stop()
-
-	for {
-		time.Sleep(time.Second)
-	}
+	return results
 }
