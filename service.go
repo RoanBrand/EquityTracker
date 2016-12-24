@@ -65,6 +65,7 @@ func checkTable() error {
 	if err != nil {
 		return err
 	}
+	defer db.Close()
 	rows, err := db.Query(`SELECT "TIMESTAMP", "PRICE" FROM "EOH" LIMIT 1`)
 	var ts time.Time
 	var price float64
@@ -81,6 +82,7 @@ func insertRecord(tableName string, ts time.Time, id string, price float64) erro
 	if err != nil {
 		return err
 	}
+	defer db.Close()
 	cleanTs := time.Date(ts.Year(), ts.Month(), ts.Day(), ts.Hour(), ts.Minute(), ts.Second(), 0, ts.Location())
 	_, err = db.Exec(fmt.Sprintf(`INSERT INTO "%s" ("TIMESTAMP", "ID", "PRICE") VALUES ($1, $2, $3)`, tableName), cleanTs.Format(time.RFC3339), id, price)
 	return err
