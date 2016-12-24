@@ -109,16 +109,3 @@ func insertRecord(tableName string, ts time.Time, id string, price float64) erro
 	_, err = db.Exec(fmt.Sprintf(`INSERT INTO "%s" ("TIMESTAMP", "ID", "PRICE") VALUES ($1, $2, $3)`, tableName), cleanTs.Format(time.RFC3339), id, price)
 	return err
 }
-
-// CREATE TABLE "EOH"
-// (
-// rowid serial NOT NULL,
-// "TIMESTAMP" timestamp without time zone,
-// "ID" character varying,
-// "PRICE" double precision
-// )
-// WITH (
-// OIDS=FALSE
-// );
-// ALTER TABLE "EOH"
-// OWNER TO imqs;
