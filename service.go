@@ -8,11 +8,11 @@ import (
 	"github.com/RoanBrand/EquityTracker/scheduler"
 	_ "github.com/lib/pq"
 	"log"
+	"net/http"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
 )
 
@@ -23,25 +23,47 @@ type stockDetails struct {
 	Price string `json:"LastTradePrice"`
 }
 
+type chartData [][2]float64
+
 func main() {
-	w := sync.WaitGroup{}
 	scheduler := scheduler.NewScheduler(time.Minute*15, func(now time.Time) {
 		results := getStockPrices([]string{"EOH"})
 		first := results[0]
-		//log.Printf("%v @ %v\n", first, now)
 		numPrice, err := strconv.ParseFloat(strings.Replace(first.Price, ",", "", -1), 64)
 		if err != nil {
 			log.Fatal(err)
 		}
-		//log.Println(numPrice)
 		if err := insertRecord(first.Name, now, first.Id, numPrice); err != nil {
 			log.Fatal(err)
 		}
 	})
 	defer scheduler.Stop()
 
-	w.Add(1)
-	w.Wait()
+	http.HandleFunc("/getstockprices", api_getStockPrices)
+	http.Handle("/", http.FileServer(http.Dir("./front-end")))
+	log.Println("Started HTTP Server")
+	log.Fatal(http.ListenAndServe(":80", nil))
+}
+
+func api_getStockPrices(w http.ResponseWriter, r *http.Request) {
+	params := r.URL.Query()
+	stockName, ok := params["name"]
+	if !ok {
+		http.Error(w, "No stock name provided", http.StatusInternalServerError)
+		return
+	}
+	data, err := getStockHistory(stockName[0])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	rep, err := json.Marshal(data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(rep)
 }
 
 func getStockPrices(names []string) []stockDetails {
@@ -60,21 +82,21 @@ func getStockPrices(names []string) []stockDetails {
 	return results
 }
 
-func checkTable() error {
+func getStockHistory(tableName string) (chartData, error) {
 	db, err := sql.Open("postgres", "user=imqs password=1mq5p@55w0rd dbname=stocks sslmode=disable")
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer db.Close()
-	rows, err := db.Query(`SELECT "TIMESTAMP", "PRICE" FROM "EOH" LIMIT 1`)
-	var ts time.Time
-	var price float64
+	rows, err := db.Query(fmt.Sprintf(`SELECT "TIMESTAMP", "PRICE" FROM "%s"`, tableName))
+	var h chartData
 	for rows.Next() {
+		var price float64
+		var ts time.Time
 		rows.Scan(&ts, &price)
-		log.Println(ts, price)
+		h = append(h, [2]float64{float64(ts.Unix() * 1000), price})
 	}
-
-	return nil
+	return h, nil
 }
 
 func insertRecord(tableName string, ts time.Time, id string, price float64) error {
