@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"compress/gzip"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -57,13 +58,23 @@ func api_getStockPrices(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	rep, err := json.Marshal(data)
+
+	w.Header().Add("Vary", "Accept-Encoding")
+	w.Header().Set("Content-Type", "application/json")
+
+	var encoder *json.Encoder
+	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		w.Header().Set("Content-Encoding", "gzip")
+		gz := gzip.NewWriter(w)
+		encoder = json.NewEncoder(gz)
+		defer gz.Close()
+	} else {
+		encoder = json.NewEncoder(w)
+	}
+	err = encoder.Encode(data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(rep)
 }
 
 func getStockPrices(names []string) []stockDetails {
