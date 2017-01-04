@@ -16,10 +16,18 @@
         "PercentComplete": PercentCompleteFormatter,
         "PercentCompleteBar": PercentCompleteBarFormatter,
         "YesNo": YesNoFormatter,
-        "Checkmark": CheckmarkFormatter
+        "Checkmark": CheckmarkFormatter,
+        "CurrencyRand": CurrencyRand
       }
     }
   });
+
+  function CurrencyRand(row, cell, value, columnDef, dataContext) {
+    var output;
+    if (value != "" && !isNaN(value))
+      output = /*value % 1 === 0 ? value :*/ parseFloat(value).toLocaleString("en-ZA", {style: "currency", currency: "ZAR", minimumFractionDigits: 2});
+    return output || value;
+  }
 
   function PercentCompleteFormatter(row, cell, value, columnDef, dataContext) {
     if (value == null || value === "") {

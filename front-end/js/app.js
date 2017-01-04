@@ -63,7 +63,9 @@ $(function () {
         });
 
         var gridColumns = [];
-        var gridRows = [];
+        var gridRowsLinks = [];
+        var gridRowsNodes = [];
+        var gridRowsOther = [];
 
         var options = {
             enableCellNavigation: true,
@@ -74,18 +76,60 @@ $(function () {
             console.info(res);
             var columns = res["cols"] || [];
             for (var i = 0; i < columns.length; i++) {
-                gridColumns.push({id: columns[i], name: columns[i], field: columns[i]});
+                var col = {id: columns[i], name: columns[i], field: columns[i]};
+                if (col.name.indexOf("(R)") !== -1)
+                    col["formatter"] = Slick.Formatters.CurrencyRand;
+                gridColumns.push(col);
             }
+
+            // Rows
             var rows = res["rows"] || [];
             for (var i = 0; i < rows.length; i++) {
                 var record = {};
                 for (var j = 0; j < columns.length; j++) {
-                    record[columns[j]] = rows[i][j];
+                   /* var cell = rows[i][j];
+                    if (cell != "" && !isNaN(cell)) {
+                        cell = cell % 1 === 0 ? cell : parseFloat(cell).toLocaleString("en-ZA", {style: "currency", currency: "ZAR", minimumFractionDigits: 2});
+                    }*/
+                    record[columns[j]] = /*cell ||*/ rows[i][j];
                 }
-                gridRows.push(record);
+                switch (record["Elements"]) {
+                    case "PIPE":
+                    case "CV":
+                    case "Pump":
+                    case "Valve (PRV)":
+                    case "Valve (FCV)":
+                    case "Valve (PSV)":
+                    case "Valve (PBV)":
+                    case "Valve (TCV)":
+                        gridRowsLinks.push(record);
+                        break;
+                    case "GL_Tank":
+                    case "Tower":
+                    case "Tank":
+                    case "BPT":
+                    case "Bulk":
+                    case "WTP":
+                    case "Well":
+                    case "BoreHole":
+                    case "Dam":
+                    case "River":
+                    case "Node":
+                        gridRowsNodes.push(record);
+                        break;
+                    default:
+                        gridRowsOther.push(record);
+                }
             }
-
-            var grid = new Slick.Grid("#myGrid", gridRows, gridColumns, options);
+            if (gridRowsLinks.length > 0) {
+                (new Slick.Grid("#table-links", gridRowsLinks, gridColumns, options)).autosizeColumns();
+            }
+            if (gridRowsNodes.length > 0) {
+                (new Slick.Grid("#table-nodes", gridRowsNodes, gridColumns, options)).autosizeColumns();
+            }
+            if (gridRowsOther.length > 0) {
+                (new Slick.Grid("#table-other", gridRowsOther, gridColumns, options)).autosizeColumns();
+            }
         });
 
     });
