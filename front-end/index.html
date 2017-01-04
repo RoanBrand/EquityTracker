@@ -2,15 +2,32 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>EOH Stock Prices</title>
+    <title>Report - Water - Model Summaries - by Elements</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
+    <link rel="stylesheet" href="SlickGrid-2.3.2/slick.grid.css" type="text/css"/>
+    <link rel="stylesheet" href="SlickGrid-2.3.2/css/smoothness/jquery-ui-1.11.3.custom.min.css"/>
+    <link rel="stylesheet" href="SlickGrid-2.3.2/examples/examples.css" type="text/css"/>
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-    <script src="https://code.highcharts.com/stock/highstock.js"></script>
-    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="SlickGrid-2.3.2/lib/jquery.event.drag-2.3.0.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <script src="http://code.highcharts.com/modules/exporting.js"></script>
+
+    <script src="SlickGrid-2.3.2/slick.core.js"></script>
+    <script src="SlickGrid-2.3.2/slick.grid.js"></script>
+
     <script src="js/app.js"></script>
 </head>
 <body>
-<div id="container" style="height: 400px; min-width: 310px"></div>
+<table width="100%">
+    <tr>
+        <td><div id="columnchart" style="height: 500px; min-width: 500px;"></div></td>
+        <td><div id="piechart" style="height: 500px; min-width: 500px;"></div></td>
+    </tr>
+</table>
+
+<div id="myGrid" style="width: 900px;height: 800px;"></div>
+
 </body>
 </html>
