@@ -6,12 +6,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/RoanBrand/EquityTracker/scheduler"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"strings"
-	"time"
 )
 
 const reportView = `SELECT
@@ -62,11 +60,6 @@ type chartData_DiscreteColumn struct {
 }
 
 func main() {
-	scheduler := scheduler.NewScheduler(time.Minute*15, func(now time.Time) {
-
-	})
-	defer scheduler.Stop()
-
 	http.HandleFunc("/report-water-modelsummaries-byelements", report_water_modelsummaries)
 	http.HandleFunc("/view-Water-ModelSummariesbyElements", getReport)
 	http.Handle("/", http.FileServer(http.Dir("./front-end")))
