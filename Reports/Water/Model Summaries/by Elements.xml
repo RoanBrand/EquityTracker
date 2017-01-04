@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<report>
+    <parameters>
+        <parameter>IMQS_scenario</parameter>
+    </parameters>
+    <datasource>
+        <dbname>reports</dbname>
+        <viewtable>water_model_summaries_elements</viewtable>
+    </datasource>
+    <table>
+        <fields>
+            <field>Capacity (kL,kL/d)</field>
+            <field>Count</field>
+            <field>Elements</field>
+            <field>Length (m)</field>
+            <field>OrderIndex</field>
+            <field>Output (l/s)</field>
+            <field>Replace Value (R)</field>
+            <field>SecondOrder</field>
+            <field>scenario</field>
+            <field></field>
+        </fields>
+    </table>
+</report>
