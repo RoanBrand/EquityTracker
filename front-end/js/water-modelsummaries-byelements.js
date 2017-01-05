@@ -1,8 +1,6 @@
-var reply;
-
 $(function () {
     $.getJSON("report-water-modelsummaries-byelements", null, function (data) {
-        console.info(data); reply = data;
+        console.info(data);
 
         Highcharts.chart("columnchart", {
             chart: {
@@ -87,11 +85,7 @@ $(function () {
             for (var i = 0; i < rows.length; i++) {
                 var record = {};
                 for (var j = 0; j < columns.length; j++) {
-                   /* var cell = rows[i][j];
-                    if (cell != "" && !isNaN(cell)) {
-                        cell = cell % 1 === 0 ? cell : parseFloat(cell).toLocaleString("en-ZA", {style: "currency", currency: "ZAR", minimumFractionDigits: 2});
-                    }*/
-                    record[columns[j]] = /*cell ||*/ rows[i][j];
+                    record[columns[j]] = rows[i][j];
                 }
                 switch (record["Elements"]) {
                     case "PIPE":

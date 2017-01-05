@@ -1,24 +1,89 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <report>
+    <title>Water - Model Summaries - by Elements</title>
     <parameters>
         <parameter>IMQS_scenario</parameter>
     </parameters>
     <datasource>
         <dbname>reports</dbname>
-        <viewtable>water_model_summaries_elements</viewtable>
+        <viewtable>
+            <tablename>water_model_summaries_elements</tablename>
+        </viewtable>
     </datasource>
-    <table>
+
+    <columnchart>
+        <title>"Report - Water - Model Summaries - by Elements"</title>
         <fields>
-            <field>Capacity (kL,kL/d)</field>
-            <field>Count</field>
             <field>Elements</field>
+            <field>Replace Value (R)</field>
+        </fields>
+        <xaxis>
+            <title>Elements</title>
+            <categories>{Elements}</categories>
+        </xaxis>
+        <yaxis>
+            <title>Replace Value (R)</title>
+            <series>{Replace Value (R)}</series>
+        </yaxis>
+    </columnchart>
+
+    <piechart>
+        <title>Report - Water - Model Summaries - by Elements</title>
+        <fields>
+            <field>Elements</field>
+            <field>Replace Value (R)</field>
+        </fields>
+        <series>
+            <name>{Elements}</name>
+            <data>{Replace Value (R)}</data>
+        </series>
+    </piechart>
+
+    <table>
+        <heading>Links</heading>
+        <fields>
+            <field>Elements</field>
+            <field>Count</field>
             <field>Length (m)</field>
-            <field>OrderIndex</field>
+            <field>Capacity (kL,kL/d)</field>
             <field>Output (l/s)</field>
             <field>Replace Value (R)</field>
-            <field>SecondOrder</field>
-            <field>scenario</field>
-            <field></field>
         </fields>
+        <filter>
+            <condition>"scenario" = {IMQS_scenario}</condition>
+            <condition>"Elements" IN ('PIPE', 'CV', 'Pump', 'Valve (PRV)', 'Valve (FCV)', 'Valve (PSV)', 'Valve (PBV)', 'Valve (TCV)')</condition>
+        </filter>
+    </table>
+
+    <table>
+        <heading>Nodes</heading>
+        <fields>
+            <field>Elements</field>
+            <field>Count</field>
+            <field>Length (m)</field>
+            <field>Capacity (kL,kL/d)</field>
+            <field>Output (l/s)</field>
+            <field>Replace Value (R)</field>
+        </fields>
+        <filter>
+            <condition>"scenario" = {IMQS_scenario}</condition>
+            <condition>"Elements" IN ('GL_Tank', 'Tower', 'Tank', 'BPT', 'Bulk', 'WTP', 'Well', 'BoreHole', 'Dam', 'River', 'Node')</condition>
+        </filter>
+    </table>
+
+    <table>
+        <heading>Other</heading>
+        <fields>
+            <field>Elements</field>
+            <field>Count</field>
+            <field>Length (m)</field>
+            <field>Capacity (kL,kL/d)</field>
+            <field>Output (l/s)</field>
+            <field>Replace Value (R)</field>
+        </fields>
+        <filter>
+            <condition>"scenario" = {IMQS_scenario}</condition>
+            <condition>"Elements" NOT IN ('PIPE', 'CV', 'Pump', 'Valve (PRV)', 'Valve (FCV)', 'Valve (PSV)', 'Valve (PBV)', 'Valve (TCV)', 'GL_Tank', 'Tower', 'Tank', 'BPT', 'Bulk', 'WTP', 'Well', 'BoreHole', 'Dam', 'River', 'Node')</condition>
+        </filter>
     </table>
 </report>

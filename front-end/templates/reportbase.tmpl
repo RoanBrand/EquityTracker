@@ -1,8 +1,9 @@
+{{ define "reportbase" }}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Report - Water - Model Summaries - by Elements</title>
+    <title>{{ .Title }}</title>
 
     <link rel="stylesheet" href="SlickGrid-2.3.2/slick.grid.css" type="text/css"/>
     <link rel="stylesheet" href="SlickGrid-2.3.2/css/smoothness/jquery-ui-1.11.3.custom.min.css"/>
@@ -17,25 +18,10 @@
     <script src="SlickGrid-2.3.2/slick.grid.js"></script>
     <script src="SlickGrid-2.3.2/slick.formatters.js"></script>
 
-    <script src="js/water-modelsummaries-byelements.js"></script>
+    <script src="js/{{ .Code }}"></script>
 </head>
 <body>
-<table width="100%">
-    <tr>
-        <td><div id="columnchart" style="height: 500px; min-width: 500px;"></div></td>
-        <td><div id="piechart" style="height: 500px; min-width: 500px;"></div></td>
-    </tr>
-</table>
-<table width="100%">
-    <tr>
-        <td><div id="table-links" style="width: 700px;height: 300px;"></div></td>
-    </tr>
-    <tr>
-        <td><div id="table-nodes" style="width: 700px;height: 300px;"></div></td>
-    </tr>
-    <tr>
-        <td><div id="table-other" style="width: 700px;height: 300px;"></div></td>
-    </tr>
-</table>
+    {{ template "Water - Model Summaries - by Elements" }}
 </body>
 </html>
+{{ end }}

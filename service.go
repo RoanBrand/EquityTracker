@@ -10,6 +10,9 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"github.com/RoanBrand/EquityTracker/Reports"
+	"html/template"
+	"io/ioutil"
 )
 
 const reportView = `SELECT
@@ -47,8 +50,6 @@ type watermodelsummariesbyelements struct {
 	scenario     string
 }
 
-type chartData_DateSeries [][2]float64
-
 type series struct {
 	Name string    `json:"name"`
 	Data []float64 `json:"data"`
@@ -60,9 +61,49 @@ type chartData_DiscreteColumn struct {
 }
 
 func main() {
+	err := Reports.LoadReport("Reports/Water/Model Summaries/by Elements.xml")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var allFiles []string
+	files, err := ioutil.ReadDir("./front-end/templates")
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, file := range files {
+		filename := file.Name()
+		if strings.HasSuffix(filename, ".tmpl") {
+			allFiles = append(allFiles, "./front-end/templates/"+filename)
+		}
+	}
+
+	templates, err := template.ParseFiles(allFiles...)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fakeTitle := struct {
+		Title string
+		Code string
+	}{"FAKE TITLE", "water-modelsummaries-byelements.js"}
+
+
+
+	http.HandleFunc("/templatereport", func(w http.ResponseWriter, r* http.Request) {
+		s1 := templates.Lookup("reportbase.tmpl")
+		err = s1.ExecuteTemplate(w, "reportbase", fakeTitle)
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
+
 	http.HandleFunc("/report-water-modelsummaries-byelements", report_water_modelsummaries)
 	http.HandleFunc("/view-Water-ModelSummariesbyElements", getReport)
 	http.Handle("/", http.FileServer(http.Dir("./front-end")))
+
+	http.HandleFunc("/getreport", getGenericReport)
+
 	log.Println("Started HTTP Server")
 	log.Fatal(http.ListenAndServe(":80", nil))
 }
@@ -128,6 +169,27 @@ func getChartData() (chartData_DiscreteColumn, error) {
 
 	h.Series = append(h.Series, ser)
 	return h, nil
+}
+
+func getGenericReport(w http.ResponseWriter, r *http.Request) {
+	q := r.URL.Query()
+	names, ok := q["report"]
+	if !ok {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+	}
+	name := names[0]
+	t, err := template.ParseFiles("front-end/templates/reportbase.tmpl", "front-end/templates/" + strings.ToLower(name) + ".tmpl")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+	data := struct {
+		Title string
+		Code string
+	}{name, strings.ToLower(name) + ".js"}
+	err = t.Execute(w, data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
 }
 
 func getReport(w http.ResponseWriter, r *http.Request) {
