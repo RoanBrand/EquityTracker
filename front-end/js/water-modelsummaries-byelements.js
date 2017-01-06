@@ -1,8 +1,15 @@
 var reportName = "water-modelsummaries-byelements";
 
 $(function () {
-    $.getJSON("report-water-modelsummaries-byelements", null, function (data) {
-        console.info(data);
+    $.getJSON(reportName + "/data", null, function (data) {
+
+        var categories = [];
+        var columnChartData = {"name": "Elements", "data": []};
+        for (var i = 0; i < data["rows"].length; i++) {
+            categories.push(data["rows"][i][2]);
+            var num = parseFloat(data["rows"][i][6]);
+            columnChartData.data.push(isNaN(num) ? 0 : num);
+        }
 
         Highcharts.chart("columnchart", {
             chart: {
@@ -15,7 +22,7 @@ $(function () {
                 title: {
                     text: "Elements"
                 },
-                categories: data["Categories"],
+                categories: categories,
                 crosshair: true
             },
             yAxis: {
@@ -24,14 +31,14 @@ $(function () {
                     text: "Replace Value (R)"
                 }
             },
-            series: data["Series"]
+            series: [columnChartData]
         });
 
         var piedata = [];
-        for (var i = 0; i < data["Categories"].length; i++) {
-            piedata.push({"name": data["Categories"][i], "y": data["Series"][0]["data"][i]})
+        for (var i = 0; i < categories.length; i++) {
+            piedata.push({"name": categories[i], "y": columnChartData["data"][i]})
         }
-        console.info(piedata);
+
         Highcharts.chart("piechart", {
             chart: {
                 plotBackgroundColor: null,
@@ -72,61 +79,57 @@ $(function () {
             enableColumnReorder: false
         };
 
-        $.getJSON("view-Water-ModelSummariesbyElements", null, function(res) {
-            console.info(res);
-            var columns = res["cols"] || [];
-            for (var i = 0; i < columns.length; i++) {
-                var col = {id: columns[i], name: columns[i], field: columns[i]};
-                if (col.name.indexOf("(R)") !== -1)
-                    col["formatter"] = Slick.Formatters.CurrencyRand;
-                gridColumns.push(col);
-            }
+        var columns = data["cols"] || [];
+        for (var i = 0; i < columns.length; i++) {
+            var col = {id: columns[i], name: columns[i], field: columns[i]};
+            if (col.name.indexOf("(R)") !== -1)
+                col["formatter"] = Slick.Formatters.CurrencyRand;
+            gridColumns.push(col);
+        }
 
-            // Rows
-            var rows = res["rows"] || [];
-            for (var i = 0; i < rows.length; i++) {
-                var record = {};
-                for (var j = 0; j < columns.length; j++) {
-                    record[columns[j]] = rows[i][j];
-                }
-                switch (record["Elements"]) {
-                    case "PIPE":
-                    case "CV":
-                    case "Pump":
-                    case "Valve (PRV)":
-                    case "Valve (FCV)":
-                    case "Valve (PSV)":
-                    case "Valve (PBV)":
-                    case "Valve (TCV)":
-                        gridRowsLinks.push(record);
-                        break;
-                    case "GL_Tank":
-                    case "Tower":
-                    case "Tank":
-                    case "BPT":
-                    case "Bulk":
-                    case "WTP":
-                    case "Well":
-                    case "BoreHole":
-                    case "Dam":
-                    case "River":
-                    case "Node":
-                        gridRowsNodes.push(record);
-                        break;
-                    default:
-                        gridRowsOther.push(record);
-                }
+        // Rows
+        var rows = data["rows"] || [];
+        for (var i = 0; i < rows.length; i++) {
+            var record = {};
+            for (var j = 0; j < columns.length; j++) {
+                record[columns[j]] = rows[i][j];
             }
-            if (gridRowsLinks.length > 0) {
-                (new Slick.Grid("#table-links", gridRowsLinks, gridColumns, options)).autosizeColumns();
+            switch (record["Elements"]) {
+                case "PIPE":
+                case "CV":
+                case "Pump":
+                case "Valve (PRV)":
+                case "Valve (FCV)":
+                case "Valve (PSV)":
+                case "Valve (PBV)":
+                case "Valve (TCV)":
+                    gridRowsLinks.push(record);
+                    break;
+                case "GL_Tank":
+                case "Tower":
+                case "Tank":
+                case "BPT":
+                case "Bulk":
+                case "WTP":
+                case "Well":
+                case "BoreHole":
+                case "Dam":
+                case "River":
+                case "Node":
+                    gridRowsNodes.push(record);
+                    break;
+                default:
+                    gridRowsOther.push(record);
             }
-            if (gridRowsNodes.length > 0) {
-                (new Slick.Grid("#table-nodes", gridRowsNodes, gridColumns, options)).autosizeColumns();
-            }
-            if (gridRowsOther.length > 0) {
-                (new Slick.Grid("#table-other", gridRowsOther, gridColumns, options)).autosizeColumns();
-            }
-        });
-
+        }
+        if (gridRowsLinks.length > 0) {
+            (new Slick.Grid("#table-links", gridRowsLinks, gridColumns, options)).autosizeColumns();
+        }
+        if (gridRowsNodes.length > 0) {
+            (new Slick.Grid("#table-nodes", gridRowsNodes, gridColumns, options)).autosizeColumns();
+        }
+        if (gridRowsOther.length > 0) {
+            (new Slick.Grid("#table-other", gridRowsOther, gridColumns, options)).autosizeColumns();
+        }
     });
 });
