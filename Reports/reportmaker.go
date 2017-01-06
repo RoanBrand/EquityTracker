@@ -5,15 +5,17 @@ import (
 	"io/ioutil"
 )
 
+type reportList map[string]report
+
 type report struct {
-	Title      string      `xml:title`
-	Parameters []parameter `xml:"parameters"`
-	Datasource datasource  `xml:"datasource"`
-	Tables     []table     `xml:"table"`
+	Name       string     `xml:"name"`
+	Title      string     `xml:"title"`
+	Parameters parameters `xml:"parameters"`
+	Datasource datasource `xml:"datasource"`
 }
 
-type parameter struct {
-	Parameter string `xml:"parameter"`
+type parameters struct {
+	Parameters []string `xml:"parameter"`
 }
 
 type datasource struct {
@@ -22,7 +24,9 @@ type datasource struct {
 }
 
 type viewtable struct {
-	Tablename string `xml:"tablename"`
+	Tablename string     `xml:"tablename"`
+	Fields    fields     `xml:"fields"`
+	Filter    conditions `xml:"filter"`
 }
 
 type fields struct {
@@ -33,21 +37,17 @@ type conditions struct {
 	Conditions []string `xml:"condition"`
 }
 
-type table struct {
-	Heading string     `xml:"heading"`
-	Fields  fields     `xml:"fields"`
-	Filter  conditions `xml:"filter"`
-}
-
-func LoadReport(path string) error {
+func LoadReport(path string) (reportList, error) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	r := report{}
 	err = xml.Unmarshal(data, &r)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+	rl := make(reportList)
+	rl[r.Name] = r
+	return rl, nil
 }

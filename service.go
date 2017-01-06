@@ -12,7 +12,6 @@ import (
 	"strings"
 	"github.com/RoanBrand/EquityTracker/Reports"
 	"html/template"
-	"io/ioutil"
 )
 
 const reportView = `SELECT
@@ -61,11 +60,65 @@ type chartData_DiscreteColumn struct {
 }
 
 func main() {
-	err := Reports.LoadReport("Reports/Water/Model Summaries/by Elements.xml")
+	rl, err := Reports.LoadReport("Reports/Water/Model Summaries/by Elements.xml")
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println(rl)
 
+	for k, report := range rl {
+		if k == "" {
+			continue
+		}
+		http.HandleFunc("/" + k + "/data", func(w http.ResponseWriter, r *http.Request) {
+			sq := bytes.NewBufferString("SELECT ")
+			for _, f := range report.Datasource.Viewtable.Fields.Fieldnames {
+				sq.WriteString(`"`+f+`", `)
+			}
+			sq.Truncate(sq.Len()-2)
+			sq.WriteString(` FROM ( SELECT * FROM "`)
+			sq.WriteString(report.Datasource.Viewtable.Tablename)
+			sq.WriteString(`") AS r`)
+
+			db, err := sql.Open("postgres", "dbname=reports user=imqs password=1mq5p@55w0rd host=imqsrc sslmode=disable")
+			if err != nil {
+				return
+			}
+			defer db.Close()
+
+			rows, err := db.Query(sq.String())
+			if err != nil {
+				return
+			}
+			defer rows.Close()
+
+			colNames, err := rows.Columns()
+			if err != nil {
+				log.Fatalf("Error retrieving columns: %v", err)
+			}
+			dynRows := NewStringStringScan(colNames)
+			jsonColumns, _ := json.Marshal(colNames)
+
+			out := bytes.NewBufferString(`{"cols":`)
+			out.Write(jsonColumns)
+			out.WriteString(`, "rows":[`)
+			for rows.Next() {
+				err = dynRows.Update(rows)
+				if err != nil {
+					log.Fatalf("Row scan Error: %v", err)
+				}
+				jsonString, _ := json.Marshal(dynRows.Get())
+				out.Write(jsonString)
+				out.WriteString(",")
+			}
+			out.Truncate((out.Len() - 1))
+			out.WriteString("]}")
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(out.Bytes())
+		})
+		http.HandleFunc("/" + k, getGenericReport)
+	}
+/*
 	var allFiles []string
 	files, err := ioutil.ReadDir("./front-end/templates")
 	if err != nil {
@@ -97,7 +150,7 @@ func main() {
 			log.Fatal(err)
 		}
 	})
-
+*/
 	http.HandleFunc("/report-water-modelsummaries-byelements", report_water_modelsummaries)
 	http.HandleFunc("/view-Water-ModelSummariesbyElements", getReport)
 	http.Handle("/", http.FileServer(http.Dir("./front-end")))
@@ -176,17 +229,22 @@ func getGenericReport(w http.ResponseWriter, r *http.Request) {
 	names, ok := q["report"]
 	if !ok {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
 	}
 	name := names[0]
 	t, err := template.ParseFiles("front-end/templates/reportbase.tmpl", "front-end/templates/" + strings.ToLower(name) + ".tmpl")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
 	}
+
 	data := struct {
 		Title string
 		Code string
 	}{name, strings.ToLower(name) + ".js"}
-	err = t.Execute(w, data)
+
+	s := t.Lookup("reportbase.tmpl")
+	err = s.ExecuteTemplate(w, "reportbase", data)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

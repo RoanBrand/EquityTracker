@@ -1,3 +1,5 @@
+var reportName = "water-modelsummaries-byelements";
+
 $(function () {
     $.getJSON("report-water-modelsummaries-byelements", null, function (data) {
         console.info(data);
