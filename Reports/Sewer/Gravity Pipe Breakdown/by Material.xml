@@ -11,8 +11,8 @@
         <viewtable>
             <tablename>SewerGravity</tablename>
             <fields>
-                <field>Material Order</field>
                 <field>Material</field>
+                <field aggregate="sum" displayname="Count">count</field>
                 <field aggregate="sum">Length (m)</field>
                 <field aggregate="sum">Replace Value</field>
             </fields>

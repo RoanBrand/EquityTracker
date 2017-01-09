@@ -1,77 +1,97 @@
 var reportName = "sewer-gravitypipebreakdown-bymaterial";
 
+function pieChart(id, title, seriesName, seriesData) {
+    Highcharts.chart(id, {
+        chart: {
+            plotBackgroundColor: null,
+            plotBorderWidth: null,
+            plotShadow: false,
+            type: "pie"
+        },
+        title: {
+            text: title
+        },
+        plotOptions: {
+            pie: {
+                allowPointSelect: true,
+                cursor: 'pointer',
+                dataLabels: {
+                    enabled: true,
+                    format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                    style: {
+                        color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                    }
+                }
+            }
+        },
+        series: [{
+            name: seriesName,
+            colorByPoint: true,
+            data: seriesData
+        }]
+    });
+}
+
+function columnChart(id, title, xAxisTitle, xAxisCategories, yAxisTitle, series) {
+    Highcharts.chart(id, {
+        chart: {
+            type: "column"
+        },
+        title: {
+            text: title
+        },
+        xAxis: {
+            title: {
+                text: xAxisTitle
+            },
+            categories: xAxisCategories,
+            crosshair: true
+        },
+        yAxis: {
+            min: 0,
+            title: {
+                text: yAxisTitle
+            }
+        },
+        series: series
+    });
+}
+
 $(function () {
     $.getJSON(reportName + "/data", null, function (data) {
 
-        var piedata = [];
+        var piedata_length = [];
+        var piedata_replacevalue = [];
         for (var i = 0; i < data["rows"].length; i++) {
-            var data = {"name": data["rows"][i][0]};
-            var num = parseFloat(data["rows"][i][1]);
-            data["y"] = isNaN(num) ? 0 : num;
-            piedata.push(data);
+            var slice_length = {"name": data["rows"][i][0]};
+            var slice_replacevalue = {"name": data["rows"][i][0]};
+            var length = parseFloat(data["rows"][i][2]);
+            var replacevalue = parseFloat(data["rows"][i][3]);
+            slice_length["y"] = isNaN(length) ? 0 : length;
+            slice_replacevalue["y"] = isNaN(replacevalue) ? 0 : replacevalue;
+            piedata_length.push(slice_length);
+            piedata_replacevalue.push(slice_replacevalue)
         }
 
-        Highcharts.chart("chart-pie-length", {
-            chart: {
-                plotBackgroundColor: null,
-                plotBorderWidth: null,
-                plotShadow: false,
-                type: "pie"
-            },
-            title: {
-                text: "Report - Sewer - Gravity Pipe Breakdown - by Material"
-            },
-            plotOptions: {
-                pie: {
-                    allowPointSelect: true,
-                    cursor: 'pointer',
-                    dataLabels: {
-                        enabled: true,
-                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
-                        style: {
-                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
-                        }
-                    }
-                }
-            },
-            series: [{
-                name: "Elements",
-                colorByPoint: true,
-                data: piedata
-            }]
-        });
+        pieChart("chart-pie-length", "Length (m) per Material", "Material", piedata_length);
+        pieChart("chart-pie-replacevalue", "Replace Value (R) per Material", "Material", piedata_replacevalue);
 
-/*
+        var columnCategories = [];
+        var columndata_length = {"name": "Material", "data": []};
+        var columndata_replacevalue = {"name": "Replace Value (R)", "data": []};
+        for (var i = 0; i < data["rows"].length; i++) {
+            columnCategories.push(data["rows"][i][0]);
+            var length = parseFloat(data["rows"][i][2]);
+            var replacevalue = parseFloat(data["rows"][i][3]);
+            columndata_length.data.push(isNaN(length) ? 0 : length);
+            columndata_replacevalue.data.push(isNaN(replacevalue) ? 0 : replacevalue)
+        }
 
-        Highcharts.chart("columnchart", {
-            chart: {
-                type: "column"
-            },
-            title: {
-                text: "Report - Water - Model Summaries - by Elements"
-            },
-            xAxis: {
-                title: {
-                    text: "Elements"
-                },
-                categories: categories,
-                crosshair: true
-            },
-            yAxis: {
-                min: 0,
-                title: {
-                    text: "Replace Value (R)"
-                }
-            },
-            series: [columnChartData]
-        });
-
-
+        columnChart("chart-column-length", "Length (m) per Material", "Material", columnCategories, "Length (m)", [columndata_length]);
+        columnChart("chart-column-replacevalue", "Replace Value (R) of Material", "Material", columnCategories, "Replace Value (R)", [columndata_replacevalue]);
 
         var gridColumns = [];
-        var gridRowsLinks = [];
-        var gridRowsNodes = [];
-        var gridRowsOther = [];
+        var gridRows = [];
 
         var options = {
             enableCellNavigation: true,
@@ -81,54 +101,70 @@ $(function () {
         var columns = data["cols"] || [];
         for (var i = 0; i < columns.length; i++) {
             var col = {id: columns[i], name: columns[i], field: columns[i]};
-            if (col.name.indexOf("(R)") !== -1)
+            if (col.name.indexOf("Replace Value") !== -1) // TODO: make this better
                 col["formatter"] = Slick.Formatters.CurrencyRand;
+
             gridColumns.push(col);
+        }
+        for (var i = 1; i < columns.length; i++) {
+            gridColumns[i]["hasTotal"] = true;
         }
 
         // Rows
         var rows = data["rows"] || [];
         for (var i = 0; i < rows.length; i++) {
             var record = {};
-            for (var j = 0; j < columns.length; j++) {
+            for (var j = 0; j < columns.length; j++)
                 record[columns[j]] = rows[i][j];
-            }
-            switch (record["Elements"]) {
-                case "PIPE":
-                case "CV":
-                case "Pump":
-                case "Valve (PRV)":
-                case "Valve (FCV)":
-                case "Valve (PSV)":
-                case "Valve (PBV)":
-                case "Valve (TCV)":
-                    gridRowsLinks.push(record);
-                    break;
-                case "GL_Tank":
-                case "Tower":
-                case "Tank":
-                case "BPT":
-                case "Bulk":
-                case "WTP":
-                case "Well":
-                case "BoreHole":
-                case "Dam":
-                case "River":
-                case "Node":
-                    gridRowsNodes.push(record);
-                    break;
-                default:
-                    gridRowsOther.push(record);
-            }
+
+            gridRows.push(record);
         }
-        if (gridRowsLinks.length > 0) {
-            (new Slick.Grid("#table-links", gridRowsLinks, gridColumns, options)).autosizeColumns();
+        if (gridRows.length > 0) {
+            var dataProvider = new TotalsDataProvider(gridRows, gridColumns);
+            var grid = new Slick.Grid("#table-summary", dataProvider, gridColumns, options);
+            grid.autosizeColumns();
         }
-        if (gridRowsNodes.length > 0) {
-            (new Slick.Grid("#table-nodes", gridRowsNodes, gridColumns, options)).autosizeColumns();
-        }
-        if (gridRowsOther.length > 0) {
-            (new Slick.Grid("#table-other", gridRowsOther, gridColumns, options)).autosizeColumns();
-        }*/
     });
 });
+
+function TotalsDataProvider(data, columns) {
+    var totals = {};
+    var totalsMetadata = {
+        // Style the totals row differently.
+        cssClasses: "totals",
+        columns: {}
+    };
+
+    // Make the totals not editable.
+    for (var i = 0; i < columns.length; i++) {
+        totalsMetadata.columns[i] = { editor: null };
+    }
+
+
+    this.getLength = function() {
+        return data.length + 1;
+    };
+
+    this.getItem = function(index) {
+        return (index < data.length) ? data[index] : totals;
+    };
+
+    this.updateTotals = function() {
+        var columnIdx = columns.length;
+        while (columnIdx--) {
+            var columnId = columns[columnIdx].id;
+            var total = 0;
+            var i = data.length;
+            while (i--) {
+                total += (parseInt(data[i][columnId], 10) || 0);
+            }
+            totals[columnId] = "Sum:  " + total;
+        }
+    };
+
+    this.getItemMetadata = function(index) {
+        return (index != data.length) ? null : totalsMetadata;
+    };
+
+    this.updateTotals();
+}
