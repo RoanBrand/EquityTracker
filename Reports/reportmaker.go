@@ -3,6 +3,9 @@ package Reports
 import (
 	"encoding/xml"
 	"io/ioutil"
+	"log"
+	"os"
+	"path/filepath"
 )
 
 type reportList map[string]report
@@ -24,30 +27,47 @@ type datasource struct {
 }
 
 type viewtable struct {
-	Tablename string     `xml:"tablename"`
+	TableName string     `xml:"tablename"`
 	Fields    fields     `xml:"fields"`
-	Filter    conditions `xml:"filter"`
+	Filters   conditions `xml:"filter"`
+	Groupings fields     `xml:"groupings"`
+	Orderings fields     `xml:"ordering"`
 }
 
 type fields struct {
-	Fieldnames []string `xml:"field"`
+	FieldNames []field `xml:"field"`
+}
+
+type field struct {
+	Aggregate   string `xml:"aggregate,attr"`
+	DisplayName string `xml:"displayname,attr"`
+	Name        string `xml:",innerxml"`
 }
 
 type conditions struct {
 	Conditions []string `xml:"condition"`
 }
 
-func LoadReport(path string) (reportList, error) {
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	r := report{}
-	err = xml.Unmarshal(data, &r)
-	if err != nil {
-		return nil, err
-	}
+func LoadReports(rootPath string) (reportList, error) {
 	rl := make(reportList)
-	rl[r.Name] = r
-	return rl, nil
+	err := filepath.Walk(rootPath, func(path string, f os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if filepath.Ext(path) == ".xml" {
+			data, er := ioutil.ReadFile(path)
+			if er != nil {
+				return er
+			}
+			r := report{}
+			er = xml.Unmarshal(data, &r)
+			if er != nil {
+				return er
+			}
+			rl[r.Name] = r
+			log.Println(r.Datasource.Viewtable)
+		}
+		return nil
+	})
+	return rl, err
 }

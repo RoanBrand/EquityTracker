@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	rl, err := Reports.LoadReport("Reports/Water/Model Summaries/by Elements.xml")
+	rl, err := Reports.LoadReports("Reports")
 	if err != nil {
 		log.Fatal(err)
 	}

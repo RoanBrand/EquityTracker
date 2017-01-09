@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report>
+    <name>sewer-gravitypipebreakdown-bymaterial</name>
+    <title>Sewer - Gravity Pipe Breakdown - by Material</title>
+    <parameters>
+        <parameter>IMQS_scenario</parameter>
+        <parameter>Material</parameter>
+    </parameters>
+    <datasource>
+        <dbname>reports</dbname>
+        <viewtable>
+            <tablename>SewerGravity</tablename>
+            <fields>
+                <field>Material Order</field>
+                <field>Material</field>
+                <field aggregate="sum">Length (m)</field>
+                <field aggregate="sum">Replace Value</field>
+            </fields>
+            <filter>
+                <condition>"scenario" = {IMQS_scenario}</condition>
+            </filter>
+            <groupings>
+                <field>Material</field>
+                <field>Material Order</field>
+            </groupings>
+            <ordering>
+                <field>Material Order</field>
+            </ordering>
+        </viewtable>
+    </datasource>
+
+    <old>
+        <field>orderid</field>
+        <field>orderid_totals</field>
+        <field>orderid_count_totals</field>
+        <field>orderid_replace_value_totals</field>
+        <field>orderid_length_totals</field>
+        <field>count</field>
+        <field>Future System Type OrderIndex</field>
+        <field>Age Category</field>
+        <field>Existing Drainage Area</field>
+        <field>Future Drainage Area</field>
+        <field>Future System</field>
+        <field>Future System Type</field>
+        <field>Inside Diameter Category</field>
+        <field>Inside Diameter Unformatted</field>
+        <field>Inside_Diameter_1</field>
+        <field>Inside Diameter(mm)</field>
+        <field>Link Type</field>
+        <field>Locality Integrity</field>
+        <field>MP Item Type</field>
+        <field>MP Item Type OrderIndex</field>
+        <field>Nominal Diameter Category</field>
+        <field>Nominal Diameter Unformatted</field>
+        <field>Nominal Diameter(mm)</field>
+        <field>Relative Spare Capacity</field>
+        <field>Relative Spare Capacity Category</field>
+        <field>Region</field>
+        <field>System</field>
+        <field>System Type</field>
+        <field>System Type and System</field>
+        <field>System Type OrderIndex</field>
+        <field>scenario</field>
+    </old>
+</report>

@@ -2,13 +2,14 @@ package Reports
 
 import (
 	"bytes"
+	"compress/gzip"
 	"database/sql"
 	"encoding/json"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"strings"
-	"compress/gzip"
 )
 
 func BuildReport(w http.ResponseWriter, r *http.Request) {
@@ -39,22 +40,61 @@ func BuildReport(w http.ResponseWriter, r *http.Request) {
 
 func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
-		sq := bytes.NewBufferString("SELECT ")
-		for _, f := range rep.Datasource.Viewtable.Fields.Fieldnames {
-			sq.WriteString(`"` + f + `", `)
+		query := bytes.NewBufferString("SELECT ")
+		for _, f := range rep.Datasource.Viewtable.Fields.FieldNames {
+			switch f.Aggregate {
+			case "sum":
+				query.WriteString(`SUM("` + f.Name + `")`)
+				if f.DisplayName != "" {
+					query.WriteString(` AS "` + f.DisplayName + `"`)
+				} else {
+					query.WriteString(` AS "` + f.Name + `"`)
+				}
+				query.WriteString(`, `)
+				break
+			default:
+				query.WriteString(`"` + f.Name + `"`)
+				if f.DisplayName != "" {
+					query.WriteString(` AS "` + f.DisplayName + `"`)
+				}
+				query.WriteString(`, `)
+			}
+
 		}
-		sq.Truncate(sq.Len() - 2)
-		sq.WriteString(` FROM ( SELECT * FROM "`)
-		sq.WriteString(rep.Datasource.Viewtable.Tablename)
-		sq.WriteString(`" WHERE "scenario" = 'Future') AS r`)
+		query.Truncate(query.Len() - 2)
+		query.WriteString(` FROM ( SELECT * FROM "`)
+		query.WriteString(rep.Datasource.Viewtable.TableName)
+		query.WriteString(`" WHERE "scenario" = 'Future') AS r`)
+
+		// GROUP BY
+		if len(rep.Datasource.Viewtable.Groupings.FieldNames) > 0 {
+			query.WriteString(` GROUP BY `)
+			for _, g := range rep.Datasource.Viewtable.Groupings.FieldNames {
+				query.WriteString(`"` + g.Name + `", `)
+			}
+			query.Truncate(query.Len() - 2)
+		}
+
+		// ORDER BY
+		if len(rep.Datasource.Viewtable.Orderings.FieldNames) > 0 {
+			query.WriteString(` ORDER BY `)
+			for _, g := range rep.Datasource.Viewtable.Orderings.FieldNames {
+				query.WriteString(`"` + g.Name + `", `)
+			}
+			query.Truncate(query.Len() - 2)
+		}
+		query.WriteString(` LIMIT 5000`)
 
 		db, err := sql.Open("postgres", "dbname=reports user=imqs password=1mq5p@55w0rd host=imqsrc sslmode=disable")
 		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		defer db.Close()
-		rows, err := db.Query(sq.String())
+		log.Println(query.String())
+		rows, err := db.Query(query.String())
 		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		defer rows.Close()
@@ -85,7 +125,8 @@ func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func EncodingWrapper(w http.ResponseWriter, r *http.Request) *json.Encoder {
+// wont gzip get closed before we write to it?
+func encodingWrapper(w http.ResponseWriter, r *http.Request) *json.Encoder {
 	var encoder *json.Encoder
 	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
 		w.Header().Set("Content-Encoding", "gzip")
@@ -96,4 +137,14 @@ func EncodingWrapper(w http.ResponseWriter, r *http.Request) *json.Encoder {
 		encoder = json.NewEncoder(w)
 	}
 	return encoder
+}
+
+
+// cannot use close
+func gzipWrapper(w http.ResponseWriter, r *http.Request) io.Writer {
+	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+		w.Header().Set("Content-Encoding", "gzip")
+		return gzip.NewWriter(w)
+	}
+	return w
 }
