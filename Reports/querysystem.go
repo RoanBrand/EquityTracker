@@ -12,6 +12,47 @@ import (
 	"strings"
 )
 
+func GetReportList(reports reportList) func(w http.ResponseWriter, r *http.Request) {
+	type response struct {
+		Name  string `json:"name"`
+		Title string `json:"title"`
+	}
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		modules, ok := q["m"]
+		if !ok {
+			http.Error(w, "Invalid request, need to provide IMQS module", http.StatusBadRequest)
+			return
+		}
+		module := modules[0]
+		list := make([]response, 0)
+		for _, v := range reports {
+			if v.Module == module {
+				list = append(list, response{v.Name, v.Title})
+			}
+		}
+
+		w.Header().Add("Vary", "Accept-Encoding")
+		w.Header().Set("Content-Type", "application/json")
+
+		var encoder *json.Encoder
+		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			w.Header().Set("Content-Encoding", "gzip")
+			gz := gzip.NewWriter(w)
+			encoder = json.NewEncoder(gz)
+			defer gz.Close()
+		} else {
+			encoder = json.NewEncoder(w)
+		}
+
+		err := encoder.Encode(list)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	}
+}
+
 func BuildReport(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	names, ok := q["name"]
@@ -91,7 +132,6 @@ func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer db.Close()
-		log.Println(query.String())
 		rows, err := db.Query(query.String())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -138,7 +178,6 @@ func encodingWrapper(w http.ResponseWriter, r *http.Request) *json.Encoder {
 	}
 	return encoder
 }
-
 
 // cannot use close
 func gzipWrapper(w http.ResponseWriter, r *http.Request) io.Writer {

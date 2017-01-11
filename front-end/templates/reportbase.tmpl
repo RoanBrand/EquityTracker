@@ -5,10 +5,11 @@
     <meta charset="UTF-8">
     <title>{{ .Title }}</title>
 
-    <link rel="stylesheet" href="css/TotalsPlugin.css" type="text/css"/>
     <link rel="stylesheet" href="SlickGrid-2.3.2/slick.grid.css" type="text/css"/>
     <link rel="stylesheet" href="SlickGrid-2.3.2/css/smoothness/jquery-ui-1.11.3.custom.min.css"/>
     <link rel="stylesheet" href="SlickGrid-2.3.2/examples/examples.css" type="text/css"/>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="SlickGrid-2.3.2/lib/jquery.event.drag-2.3.0.js"></script>
@@ -19,13 +20,14 @@
     <script src="SlickGrid-2.3.2/slick.grid.js"></script>
     <script src="SlickGrid-2.3.2/slick.formatters.js"></script>
 
-    <script src="js/TotalsDataView.js"></script>
-    <script src="js/TotalsPlugin.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
 
     <script src="js/{{ .Code }}"></script>
 </head>
 <body>
+<div class="container-fluid">
     {{ template "content" }}
+</div>
 </body>
 </html>
 {{ end }}

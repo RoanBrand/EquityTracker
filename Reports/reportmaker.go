@@ -13,6 +13,7 @@ type reportList map[string]report
 type report struct {
 	Name       string     `xml:"name"`
 	Title      string     `xml:"title"`
+	Module     string     `xml:"module"`
 	Parameters parameters `xml:"parameters"`
 	Datasource datasource `xml:"datasource"`
 }
@@ -48,7 +49,12 @@ type conditions struct {
 	Conditions []string `xml:"condition"`
 }
 
-func LoadReports(rootPath string) (reportList, error) {
+type reportServer struct {
+	Reports reportList
+	Modules []string
+}
+
+func NewReportServer(rootPath string) (reportServer, error) {
 	rl := make(reportList)
 	err := filepath.Walk(rootPath, func(path string, f os.FileInfo, err error) error {
 		if err != nil {
@@ -69,5 +75,5 @@ func LoadReports(rootPath string) (reportList, error) {
 		}
 		return nil
 	})
-	return rl, err
+	return reportServer{Reports: rl}, err
 }

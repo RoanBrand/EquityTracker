@@ -8,19 +8,21 @@ import (
 )
 
 func main() {
-	rl, err := Reports.LoadReports("Reports")
+	serv, err := Reports.NewReportServer("Reports")
 	if err != nil {
 		log.Fatal(err)
 	}
-	for k, report := range rl {
+	for k, report := range serv.Reports {
 		if k == "" {
 			continue
 		}
-		http.HandleFunc("/"+k+"/data", Reports.GetReportData(report))
+		http.HandleFunc("/"+k+"/data", Reports.GetReportData(report)) // report content data
 	}
-	http.HandleFunc("/report", Reports.BuildReport)
-	http.Handle("/", http.FileServer(http.Dir("./front-end")))
+	http.HandleFunc("/reportlist", Reports.GetReportList(serv.Reports)) // list of reports
+
+	http.HandleFunc("/report", Reports.BuildReport)            // report query
+	http.Handle("/", http.FileServer(http.Dir("./front-end"))) // static files
 
 	log.Println("Started HTTP Server")
-	log.Fatal(http.ListenAndServe(":80", nil))
+	log.Fatal(http.ListenAndServe(":2016", nil))
 }

@@ -2,6 +2,7 @@
 <report>
     <name>water-modelsummaries-byelements</name>
     <title>Water - Model Summaries - by Elements</title>
+    <module>Water</module>
     <parameters>
         <parameter>IMQS_scenario</parameter>
         <parameter>Element</parameter>
