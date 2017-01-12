@@ -24,10 +24,10 @@ type parameters struct {
 
 type datasource struct {
 	DBName    string    `xml:"dbname"`
-	Viewtable viewtable `xml:"viewtable"`
+	ViewTable viewTable `xml:"viewtable"`
 }
 
-type viewtable struct {
+type viewTable struct {
 	TableName string     `xml:"tablename"`
 	Fields    fields     `xml:"fields"`
 	Filters   conditions `xml:"filter"`
@@ -71,7 +71,7 @@ func NewReportServer(rootPath string) (reportServer, error) {
 				return er
 			}
 			rl[r.Name] = r
-			log.Println(r.Datasource.Viewtable)
+			log.Println(r.Datasource.ViewTable)
 		}
 		return nil
 	})

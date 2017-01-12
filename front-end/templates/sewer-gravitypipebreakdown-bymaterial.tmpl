@@ -1,17 +1,41 @@
 {{ define "content" }}
-<table width="100%">
-    <tr>
-        <td><div id="chart-pie-length" style="height: 500px; min-width: 500px;"></div></td>
-        <td><div id="chart-pie-replacevalue" style="height: 500px; min-width: 500px;"></div></td>
-    </tr>
-    <tr>
-        <td><div id="chart-column-length" style="height: 500px; min-width: 500px;"></div></td>
-        <td><div id="chart-column-replacevalue" style="height: 500px; min-width: 500px;"></div></td>
-    </tr>
-</table>
-<table width="100%">
-    <tr>
-        <td><div id="table-summary" style="width: 900px;height: 350px;"></div></td>
-    </tr>
-</table>
+<ul class="nav nav-tabs" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" data-toggle="tab" href="#dashboard" role="tab">Dashboard</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" data-toggle="tab" href="#summary" role="tab">Summary</a>
+    </li>
+</ul>
+
+<div class="tab-content" style="margin-top: 20px">
+    <div class="tab-pane active" id="dashboard" role="tabpanel">
+        <div class="row" style="margin-bottom: 20px"><div class="col h2">Gravity Pipe Breakdown - by Material</div></div>
+        <div class="row">
+            <div class="col-6">
+                <div id="chart-pie-length" style="height: 100%;width: 100%"></div>
+            </div>
+            <div class="col-6">
+                <div id="chart-column-length" style="height: 100%;width: 100%"></div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <div id="chart-pie-replacevalue" style="height: 100%;width: 100%"></div>
+            </div>
+            <div class="col-6">
+                <div id="chart-column-replacevalue" style="height: 100%;width: 100%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-pane" id="summary" role="tabpanel">
+        <div class="row" style="margin-bottom: 20px"><div class="col h2">Gravity Pipe Breakdown - by Material</div></div>
+        <div class="row">
+            <div class="col">
+                <div id="table-summary" style="width: 900px;height: 350px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
 {{ end }}

@@ -8,28 +8,39 @@
     </li>
 </ul>
 
-<div class="tab-content">
+<div class="tab-content" style="margin-top: 20px">
     <div class="tab-pane active" id="dashboard" role="tabpanel">
-        <table width="100%">
-            <tr>
-                <td><div id="columnchart" style="height: 500px; min-width: 500px;"></div></td>
-                <td><div id="piechart" style="height: 500px; min-width: 500px;"></div></td>
-            </tr>
-        </table>
+        <div class="row" style="margin-bottom: 20px"><div class="col h2">Model Summaries - by Elements</div></div>
+        <div class="row">
+            <div class="col-6">
+                <div id="columnchart" style="height: 100%;width: 100%"></div>
+            </div>
+            <div class="col-6">
+                <div id="piechart" style="height: 100%;width: 100%"></div>
+            </div>
+        </div>
     </div>
 
     <div class="tab-pane" id="summary" role="tabpanel">
-        <table width="100%">
-            <tr>
-                <td><div id="table-links" style="width: 900px;height: 300px;"></div></td>
-            </tr>
-            <tr>
-                <td><div id="table-nodes" style="width: 900px;height: 300px;"></div></td>
-            </tr>
-            <tr>
-                <td><div id="table-other" style="width: 900px;height: 300px;"></div></td>
-            </tr>
-        </table>
+        <div class="row" style="margin-bottom: 20px"><div class="col h2">Model Summaries - by Elements</div></div>
+        <div class="row"><div class="col h3">Links</div></div>
+        <div class="row">
+            <div class="col">
+                <div id="table-links" style="width: 900px;height: 300px;"></div>
+            </div>
+        </div>
+        <div class="row"><div class="col h3">Nodes</div></div>
+        <div class="row">
+            <div class="col">
+                <div id="table-nodes" style="width: 900px;height: 300px;"></div>
+            </div>
+        </div>
+        <div class="row"><div class="col h3">Other</div></div>
+        <div class="row">
+            <div class="col">
+                <div id="table-other" style="width: 900px;height: 300px;"></div>
+            </div>
+        </div>
     </div>
 </div>
 {{ end }}

@@ -82,7 +82,7 @@ func BuildReport(w http.ResponseWriter, r *http.Request) {
 func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := bytes.NewBufferString("SELECT ")
-		for _, f := range rep.Datasource.Viewtable.Fields.FieldNames {
+		for _, f := range rep.Datasource.ViewTable.Fields.FieldNames {
 			switch f.Aggregate {
 			case "sum":
 				query.WriteString(`SUM("` + f.Name + `")`)
@@ -104,29 +104,29 @@ func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 		}
 		query.Truncate(query.Len() - 2)
 		query.WriteString(` FROM ( SELECT * FROM "`)
-		query.WriteString(rep.Datasource.Viewtable.TableName)
+		query.WriteString(rep.Datasource.ViewTable.TableName)
 		query.WriteString(`" WHERE "scenario" = 'Future') AS r`)
 
 		// GROUP BY
-		if len(rep.Datasource.Viewtable.Groupings.FieldNames) > 0 {
+		if len(rep.Datasource.ViewTable.Groupings.FieldNames) > 0 {
 			query.WriteString(` GROUP BY `)
-			for _, g := range rep.Datasource.Viewtable.Groupings.FieldNames {
+			for _, g := range rep.Datasource.ViewTable.Groupings.FieldNames {
 				query.WriteString(`"` + g.Name + `", `)
 			}
 			query.Truncate(query.Len() - 2)
 		}
 
 		// ORDER BY
-		if len(rep.Datasource.Viewtable.Orderings.FieldNames) > 0 {
+		if len(rep.Datasource.ViewTable.Orderings.FieldNames) > 0 {
 			query.WriteString(` ORDER BY `)
-			for _, g := range rep.Datasource.Viewtable.Orderings.FieldNames {
+			for _, g := range rep.Datasource.ViewTable.Orderings.FieldNames {
 				query.WriteString(`"` + g.Name + `", `)
 			}
 			query.Truncate(query.Len() - 2)
 		}
 		query.WriteString(` LIMIT 5000`)
 
-		db, err := sql.Open("postgres", "dbname=reports user=imqs password=1mq5p@55w0rd host=imqsrc sslmode=disable")
+		db, err := sql.Open("postgres", "dbname=reports user=imqs password=1mq5p@55w0rd host=localhost sslmode=disable")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
