@@ -12,6 +12,43 @@ import (
 	"strings"
 )
 
+func ListPage(reports reportList) func(w http.ResponseWriter, r *http.Request) {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		page := bytes.NewBufferString(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">`)
+		page.WriteString(`<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">`)
+		page.WriteString(`<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>`)
+		page.WriteString(`<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>`)
+		page.WriteString(`</head><body><div class="container-fluid">`)
+
+		q := r.URL.Query()
+		modules, ok := q["m"]
+		if !ok {
+			http.Error(w, "Invalid request, need to provide IMQS module", http.StatusBadRequest)
+			return
+		}
+		module := modules[0]
+
+		page.WriteString(`<div class="row"><div class="col"><h1 class="display-4">` + module + ` Reports</h1></div></div><br>`)
+		page.WriteString(`<dl class="row">`)
+		cat := ""
+		for _, v := range reports {
+			if v.Module == module {
+				if v.Category != cat {
+					cat = v.Category
+					page.WriteString(`<dt class="col-3">` + cat + `</dt>`)
+					page.WriteString(`<dd class="col-9"><a href="report?name=` + v.Name + `">` + v.Title + `</a></dd>`)
+				} else {
+					page.WriteString(`<dd class="col-9 offset-3"><a href="report?name=` + v.Name + `">` + v.Title + `</a></dd>`)
+				}
+			}
+		}
+		page.WriteString(`</dl></div></body></html>`)
+		w.Header().Set("Content-Type", "text/html")
+		w.Write(page.Bytes())
+	}
+}
+
 func GetReportList(reports reportList) func(w http.ResponseWriter, r *http.Request) {
 	type response struct {
 		Name  string `json:"name"`
@@ -82,7 +119,7 @@ func BuildReport(w http.ResponseWriter, r *http.Request) {
 func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := bytes.NewBufferString("SELECT ")
-		for _, f := range rep.Datasource.ViewTable.Fields.FieldNames {
+		for _, f := range rep.DataSource.ViewTable.Fields.FieldNames {
 			switch f.Aggregate {
 			case "sum":
 				query.WriteString(`SUM("` + f.Name + `")`)
@@ -104,27 +141,27 @@ func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 		}
 		query.Truncate(query.Len() - 2)
 		query.WriteString(` FROM ( SELECT * FROM "`)
-		query.WriteString(rep.Datasource.ViewTable.TableName)
+		query.WriteString(rep.DataSource.ViewTable.TableName)
 		query.WriteString(`" WHERE "scenario" = 'Future') AS r`)
 
 		// GROUP BY
-		if len(rep.Datasource.ViewTable.Groupings.FieldNames) > 0 {
+		if len(rep.DataSource.ViewTable.Groupings.FieldNames) > 0 {
 			query.WriteString(` GROUP BY `)
-			for _, g := range rep.Datasource.ViewTable.Groupings.FieldNames {
+			for _, g := range rep.DataSource.ViewTable.Groupings.FieldNames {
 				query.WriteString(`"` + g.Name + `", `)
 			}
 			query.Truncate(query.Len() - 2)
 		}
 
 		// ORDER BY
-		if len(rep.Datasource.ViewTable.Orderings.FieldNames) > 0 {
+		if len(rep.DataSource.ViewTable.Orderings.FieldNames) > 0 {
 			query.WriteString(` ORDER BY `)
-			for _, g := range rep.Datasource.ViewTable.Orderings.FieldNames {
+			for _, g := range rep.DataSource.ViewTable.Orderings.FieldNames {
 				query.WriteString(`"` + g.Name + `", `)
 			}
 			query.Truncate(query.Len() - 2)
 		}
-		query.WriteString(` LIMIT 5000`)
+		query.WriteString(` LIMIT 10000`)
 
 		db, err := sql.Open("postgres", "dbname=reports user=imqs password=1mq5p@55w0rd host=localhost sslmode=disable")
 		if err != nil {

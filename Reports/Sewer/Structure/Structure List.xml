@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report>
+    <name>sewer-structure-structurelist</name>
+    <module>Sewer</module>
+    <category>Structure</category>
+    <title>Structure List</title>
+    <parameters>
+        <parameter>IMQS_scenario</parameter>
+    </parameters>
+</report>

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <report>
     <name>sewer-gravitypipebreakdown-bymaterial</name>
-    <title>Sewer - Gravity Pipe Breakdown - by Material</title>
     <module>Sewer</module>
+    <category>Gravity Pipe Breakdown</category>
+    <title>by Material</title>
     <parameters>
         <parameter>IMQS_scenario</parameter>
         <parameter>Material</parameter>

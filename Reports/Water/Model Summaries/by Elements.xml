@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <report>
     <name>water-modelsummaries-byelements</name>
-    <title>Water - Model Summaries - by Elements</title>
     <module>Water</module>
+    <category>Model Summaries</category>
+    <title>by Elements</title>
     <parameters>
         <parameter>IMQS_scenario</parameter>
         <parameter>Element</parameter>

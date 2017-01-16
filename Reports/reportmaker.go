@@ -12,10 +12,11 @@ type reportList map[string]report
 
 type report struct {
 	Name       string     `xml:"name"`
-	Title      string     `xml:"title"`
 	Module     string     `xml:"module"`
+	Category   string     `xml:"category"`
+	Title      string     `xml:"title"`
 	Parameters parameters `xml:"parameters"`
-	Datasource datasource `xml:"datasource"`
+	DataSource datasource `xml:"datasource"`
 }
 
 type parameters struct {
@@ -71,7 +72,7 @@ func NewReportServer(rootPath string) (reportServer, error) {
 				return er
 			}
 			rl[r.Name] = r
-			log.Println(r.Datasource.ViewTable)
+			log.Println(r.DataSource.ViewTable)
 		}
 		return nil
 	})

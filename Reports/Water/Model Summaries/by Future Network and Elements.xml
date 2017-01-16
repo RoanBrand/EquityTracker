@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report>
+    <name>water-modelsummaries-byfuturenetworkandelements</name>
+    <module>Water</module>
+    <category>Model Summaries</category>
+    <title>by Future Network and Elements</title>
+    <parameters>
+        <parameter>IMQS_scenario</parameter>
+    </parameters>
+</report>
