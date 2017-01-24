@@ -132,4 +132,11 @@ $(function () {
             (new Slick.Grid("#table-other", gridRowsOther, gridColumns, options)).autosizeColumns();
         }
     });
+
+    $("#gen-pdf").on("click", function (e) {
+        /*$.ajax(reportName + "/pdf", function (data) {
+            console.info(data);
+        });*/
+        $.download(reportName + "/pdf", "filename=" + reportName + ".pdf");
+    });
 });

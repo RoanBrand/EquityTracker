@@ -1,4 +1,13 @@
 {{ define "content" }}
+<div class="row">
+    <div class="col-1">
+        <button type="button" class="btn btn-secondary btn-lg" data-toggle="modal" data-target="#modal-print">
+            <span class="glyphicon glyphicon-print" aria-hidden="true"></span>
+        </button>
+    </div>
+    <div class="col-11"></div>
+</div>
+
 <ul class="nav nav-tabs" role="tablist">
     <li class="nav-item">
         <a class="nav-link active" data-toggle="tab" href="#dashboard" role="tab">Dashboard</a>
@@ -39,6 +48,26 @@
         <div class="row">
             <div class="col">
                 <div id="table-other" style="width: 900px;height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modal-print" tabindex="-1" role="dialog" aria-labelledby="pdf-modal-title" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pdf-modal-title">Print Report</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body"></div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" id="gen-pdf" class="btn btn-primary">Generate PDF</button>
             </div>
         </div>
     </div>

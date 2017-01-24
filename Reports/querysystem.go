@@ -7,8 +7,10 @@ import (
 	"encoding/json"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os/exec"
 	"strings"
 )
 
@@ -117,6 +119,7 @@ func BuildReport(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := bytes.NewBufferString("SELECT ")
 		for _, f := range rep.DataSource.ViewTable.Fields.FieldNames {
@@ -200,6 +203,34 @@ func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(out.Bytes())
 	}
+}
+
+func GeneratePDF(rep report) func(w http.ResponseWriter, r *http.Request) {
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		inputHTML := "http://127.0.0.1/reports/report?name=" + rep.Name
+		cmd := exec.Command("wkhtmltopdf", "--javascript-delay", "1500", inputHTML, rep.Name+".pdf")
+		//cmd.Stdout = os.Stdout
+		//cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if err != nil {
+			//args := "wkhtmltopdf --javascript-delay 1500 " + inputHTML + " " + rep.Name + ".pdf"
+			//log.Printf(`error running "%s": %v` +"\n", args, err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		pdf, err := ioutil.ReadFile(rep.Name + ".pdf")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Disposition", `attachment; filename="`+rep.Name+`.pdf"`)
+		w.Header().Set("Content-Type", "application/pdf")
+		w.Write(pdf)
+	}
+
 }
 
 // wont gzip get closed before we write to it?
