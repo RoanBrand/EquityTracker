@@ -3,7 +3,6 @@ package Reports
 import (
 	"encoding/xml"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 )
@@ -72,7 +71,6 @@ func NewReportServer(rootPath string) (reportServer, error) {
 				return er
 			}
 			rl[r.Name] = r
-			log.Println(r.DataSource.ViewTable)
 		}
 		return nil
 	})
