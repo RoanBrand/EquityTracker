@@ -209,14 +209,36 @@ func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 func GeneratePDF(rep report) func(w http.ResponseWriter, r *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		q := r.URL.Query()
+		orientations, ok := q["o"]
+		if !ok {
+			http.Error(w, "Invalid request", http.StatusBadRequest)
+			return
+		}
+		orientation := orientations[0]
+		sizes, ok := q["s"]
+		if !ok {
+			http.Error(w, "Invalid request", http.StatusBadRequest)
+			return
+		}
+		size := sizes[0]
+
 		inputHTML := "http://127.0.0.1/reports/report?name=" + rep.Name
-		cmd := exec.Command("wkhtmltopdf", "--javascript-delay", "1500", "--print-media-type", inputHTML, rep.Name+".pdf")
-		//cmd.Stdout = os.Stdout
-		//cmd.Stderr = os.Stderr
+		pdfArgs := []string{
+			"--print-media-type",
+			"--javascript-delay",
+			"1500",
+		}
+		if orientation == "Landscape" {
+			pdfArgs = append(pdfArgs, "--orientation", "Landscape") // default Portrait
+		}
+		if size == "A3" || size == "A2" {
+			pdfArgs = append(pdfArgs, "--page-size", size) // default A4
+		}
+		pdfArgs = append(pdfArgs, inputHTML, rep.Name + ".pdf")
+		cmd := exec.Command("wkhtmltopdf", pdfArgs...)
 		err := cmd.Run()
 		if err != nil {
-			//args := "wkhtmltopdf --javascript-delay 1500 " + inputHTML + " " + rep.Name + ".pdf"
-			//log.Printf(`error running "%s": %v` +"\n", args, err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
