@@ -101,7 +101,11 @@ func BuildReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name := names[0]
-	t, err := template.ParseFiles("front-end/templates/reportbase.tmpl", "front-end/templates/"+strings.ToLower(name)+".tmpl")
+	t, err := template.ParseFiles(
+		"front-end/templates/reportbase.tmpl",
+		"front-end/templates/"+strings.ToLower(name)+".tmpl",
+		"front-end/templates/"+strings.ToLower(name)+"-content.tmpl",
+	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

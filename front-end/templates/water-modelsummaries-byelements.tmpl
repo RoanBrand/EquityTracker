@@ -1,4 +1,4 @@
-{{ define "content" }}
+{{ define "layout" }}
 <div class="row">
     <div class="col">
         <h1>Model Summaries - by Elements</h1>
@@ -39,7 +39,7 @@
                         </div>
                     </div>
                 </div>
-
+                <br>
                 <div class="row">
                     <div class="col-4 h5">PDF Size</div>
                     <div class="col-8">
@@ -56,6 +56,20 @@
                         </div>
                     </div>
                 </div>
+                <br>
+                <div class="row">
+                    <div class="col-4 h5">Layout option</div>
+                    <div class="col-8">
+                        <div class="btn-group" data-toggle="buttons" id="pdf-layout">
+                            <label class="btn btn-secondary active">
+                                <input type="radio" value="Normal" autocomplete="off" checked> Normal
+                            </label>
+                            <label class="btn btn-secondary">
+                                <input type="radio" value="Flattened" autocomplete="off"> Flattened
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="modal-footer">
@@ -66,7 +80,6 @@
         </div>
     </div>
 </div>
-
 
 <ul class="nav nav-tabs print-hide" role="tablist">
     <li class="nav-item">
@@ -79,37 +92,11 @@
 
 <div class="tab-content" style="margin-top: 20px">
     <div class="tab-pane active" id="dashboard" role="tabpanel">
-        <!--div class="row" style="margin-bottom: 20px"><div class="col h2">Model Summaries - by Elements</div></div-->
-        <div class="row">
-            <div class="col-6">
-                <div id="columnchart" style="height: 100%;width: 100%"></div>
-            </div>
-            <div class="col-6">
-                <div id="piechart" style="height: 100%;width: 100%"></div>
-            </div>
-        </div>
+        {{ template "content-dashboard" }}
     </div>
 
     <div class="tab-pane" id="summary" role="tabpanel">
-        <!--div class="row" style="margin-bottom: 20px"><div class="col h2">Model Summaries - by Elements</div></div-->
-        <div class="row"><div class="col h3">Links</div></div>
-        <div class="row">
-            <div class="col">
-                <div id="table-links" style="width: 900px;height: 300px;"></div>
-            </div>
-        </div>
-        <div class="row"><div class="col h3">Nodes</div></div>
-        <div class="row">
-            <div class="col">
-                <div id="table-nodes" style="width: 900px;height: 300px;"></div>
-            </div>
-        </div>
-        <div class="row"><div class="col h3">Other</div></div>
-        <div class="row">
-            <div class="col">
-                <div id="table-other" style="width: 900px;height: 300px;"></div>
-            </div>
-        </div>
+        {{ template "content-summary" }}
     </div>
 </div>
 {{ end }}
