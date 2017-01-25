@@ -133,10 +133,14 @@ $(function () {
         }
     });
 
-    $("#gen-pdf").on("click", function (e) {
-        /*$.ajax(reportName + "/pdf", function (data) {
-            console.info(data);
-        });*/
-        $.download(reportName + "/pdf", "filename=" + reportName + ".pdf");
+    $("#gen-pdf").on("click", function () { window.location.href = reportName + "/pdf"; });
+
+    $("#test-pdf").on("click", function (e) {
+        var PDFOrientation = $("#pdf-orientation label.active input").val();
+        var PDFSize = $("#pdf-size label.active input").val();
+        console.info({
+            "orientation": PDFOrientation,
+            "size": PDFSize
+        });
     });
 });

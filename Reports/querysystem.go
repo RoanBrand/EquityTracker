@@ -20,6 +20,7 @@ func ListPage(reports reportList) func(w http.ResponseWriter, r *http.Request) {
 		page := bytes.NewBufferString(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">`)
 		page.WriteString(`<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">`)
 		page.WriteString(`<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>`)
+		page.WriteString(`<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"></script>`)
 		page.WriteString(`<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>`)
 		page.WriteString(`</head><body><div class="container-fluid">`)
 
@@ -209,7 +210,7 @@ func GeneratePDF(rep report) func(w http.ResponseWriter, r *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		inputHTML := "http://127.0.0.1/reports/report?name=" + rep.Name
-		cmd := exec.Command("wkhtmltopdf", "--javascript-delay", "1500", inputHTML, rep.Name+".pdf")
+		cmd := exec.Command("wkhtmltopdf", "--javascript-delay", "1500", "--print-media-type", inputHTML, rep.Name+".pdf")
 		//cmd.Stdout = os.Stdout
 		//cmd.Stderr = os.Stderr
 		err := cmd.Run()
@@ -226,7 +227,7 @@ func GeneratePDF(rep report) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		w.Header().Set("Content-Disposition", `attachment; filename="`+rep.Name+`.pdf"`)
+		w.Header().Set("Content-Disposition", `attachment; filename="`+rep.Title+`.pdf"`)
 		w.Header().Set("Content-Type", "application/pdf")
 		w.Write(pdf)
 	}
