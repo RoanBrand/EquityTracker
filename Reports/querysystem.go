@@ -2,11 +2,9 @@ package Reports
 
 import (
 	"bytes"
-	"compress/gzip"
 	"database/sql"
 	"encoding/json"
 	"html/template"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -52,47 +50,6 @@ func ListPage(reports reportList) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetReportList(reports reportList) func(w http.ResponseWriter, r *http.Request) {
-	type response struct {
-		Name  string `json:"name"`
-		Title string `json:"title"`
-	}
-
-	return func(w http.ResponseWriter, r *http.Request) {
-		q := r.URL.Query()
-		modules, ok := q["m"]
-		if !ok {
-			http.Error(w, "Invalid request, need to provide IMQS module", http.StatusBadRequest)
-			return
-		}
-		module := modules[0]
-		list := make([]response, 0)
-		for _, v := range reports {
-			if v.Module == module {
-				list = append(list, response{v.Name, v.Title})
-			}
-		}
-
-		w.Header().Add("Vary", "Accept-Encoding")
-		w.Header().Set("Content-Type", "application/json")
-
-		var encoder *json.Encoder
-		if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-			w.Header().Set("Content-Encoding", "gzip")
-			gz := gzip.NewWriter(w)
-			encoder = json.NewEncoder(gz)
-			defer gz.Close()
-		} else {
-			encoder = json.NewEncoder(w)
-		}
-
-		err := encoder.Encode(list)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
-}
-
 func BuildReport(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	names, ok := q["name"]
@@ -101,11 +58,23 @@ func BuildReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name := names[0]
-	t, err := template.ParseFiles(
+	flatOptions, ok := q["flat"]
+	flat := false
+	if ok && flatOptions[0] == "t" {
+		flat = true
+	}
+
+	reportName := strings.ToLower(name)
+	templates := []string{
 		"front-end/templates/reportbase.tmpl",
-		"front-end/templates/"+strings.ToLower(name)+".tmpl",
-		"front-end/templates/"+strings.ToLower(name)+"-content.tmpl",
-	)
+		"front-end/templates/" + reportName + "-content.tmpl",
+	}
+	if flat {
+		templates = append(templates, "front-end/templates/"+reportName+"-flat.tmpl")
+	} else {
+		templates = append(templates, "front-end/templates/"+reportName+".tmpl")
+	}
+	t, err := template.ParseFiles(templates...)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -226,8 +195,14 @@ func GeneratePDF(rep report) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		size := sizes[0]
+		flatOptions, ok := q["f"]
 
-		inputHTML := "http://127.0.0.1/reports/report?name=" + rep.Name
+		inputHTML := "http://127.0.0.1/reports/report"
+		if ok && flatOptions[0] == "t" {
+			inputHTML += "?flat=t&name=" + rep.Name
+		} else {
+			inputHTML += "?name=" + rep.Name
+		}
 		pdfArgs := []string{
 			"--print-media-type",
 			"--javascript-delay",
@@ -239,7 +214,7 @@ func GeneratePDF(rep report) func(w http.ResponseWriter, r *http.Request) {
 		if size == "A3" || size == "A2" {
 			pdfArgs = append(pdfArgs, "--page-size", size) // default A4
 		}
-		pdfArgs = append(pdfArgs, inputHTML, rep.Name + ".pdf")
+		pdfArgs = append(pdfArgs, inputHTML, rep.Name+".pdf")
 		cmd := exec.Command("wkhtmltopdf", pdfArgs...)
 		err := cmd.Run()
 		if err != nil {
@@ -253,32 +228,10 @@ func GeneratePDF(rep report) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		w.Header().Set("Content-Disposition", `attachment; filename="`+rep.Title+`.pdf"`)
+		dlName := rep.Module + " - " + rep.Category + " - " + rep.Title + ".pdf"
+		w.Header().Set("Content-Disposition", `attachment; filename="`+dlName+`"`)
 		w.Header().Set("Content-Type", "application/pdf")
 		w.Write(pdf)
 	}
 
-}
-
-// wont gzip get closed before we write to it?
-func encodingWrapper(w http.ResponseWriter, r *http.Request) *json.Encoder {
-	var encoder *json.Encoder
-	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-		w.Header().Set("Content-Encoding", "gzip")
-		gz := gzip.NewWriter(w)
-		encoder = json.NewEncoder(gz)
-		defer gz.Close()
-	} else {
-		encoder = json.NewEncoder(w)
-	}
-	return encoder
-}
-
-// cannot use close
-func gzipWrapper(w http.ResponseWriter, r *http.Request) io.Writer {
-	if strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
-		w.Header().Set("Content-Encoding", "gzip")
-		return gzip.NewWriter(w)
-	}
-	return w
 }

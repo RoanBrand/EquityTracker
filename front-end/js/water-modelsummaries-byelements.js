@@ -136,7 +136,12 @@ $(function () {
     $("#gen-pdf").on("click", function () {
         var PDFOrientation = $("#pdf-orientation label.active input").val();
         var PDFSize = $("#pdf-size label.active input").val();
+        var PDFLayout = $("#pdf-layout label.active input").val();
+
         var link = reportName + "/pdf?o=" + PDFOrientation + "&s=" + PDFSize;
+        if (PDFLayout === "Flattened") {
+            link += "&f=t";
+        }
         window.location.href = link;
     });
 
