@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-func ListPage(reports reportList) func(w http.ResponseWriter, r *http.Request) {
+func (s *reportServer) ListPage() func(w http.ResponseWriter, r *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		page := bytes.NewBufferString(`<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">`)
@@ -29,11 +29,22 @@ func ListPage(reports reportList) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		module := modules[0]
+		scenarios, ok := q["s"]
+		if !ok {
+			http.Error(w, "Invalid request, need to provide IMQS scenario", http.StatusBadRequest)
+			return
+		}
+		sessionCookie, err := r.Cookie("session")
+		if err != nil {
+			http.Error(w, "Invalid request, need to provide IMQS module", http.StatusBadGateway)
+			return
+		}
+		s.Sessions[sessionCookie.Value] = sessionInfo{module, scenarios[0]}
 
 		page.WriteString(`<div class="row"><div class="col"><h1 class="display-4">` + module + ` Reports</h1></div></div><br>`)
 		page.WriteString(`<dl class="row">`)
 		cat := ""
-		for _, v := range reports {
+		for _, v := range s.Reports {
 			if v.Module == module {
 				if v.Category != cat {
 					cat = v.Category
@@ -92,7 +103,7 @@ func BuildReport(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
+func (s *reportServer) GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		query := bytes.NewBufferString("SELECT ")
@@ -119,7 +130,45 @@ func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 		query.Truncate(query.Len() - 2)
 		query.WriteString(` FROM ( SELECT * FROM "`)
 		query.WriteString(rep.DataSource.ViewTable.TableName)
-		query.WriteString(`" WHERE "scenario" = 'Future') AS r`)
+		//query.WriteString(`" WHERE "scenario" = 'Future') AS r`)
+		query.WriteString(`" `)
+
+		// FILTERS
+		if len(rep.DataSource.ViewTable.Filters.Conditions) > 0 {
+			query.WriteString(`WHERE `)
+
+			sessionCookie, err := r.Cookie("session")
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			session, ok := s.Sessions[sessionCookie.Value]
+			if !ok {
+				log.Println("No session found")
+				return
+			}
+
+			for _, c := range rep.DataSource.ViewTable.Filters.Conditions {
+				if strings.Contains(c, "{") {
+					var filter string
+					for _, p := range rep.Parameters.Parameters {
+						if strings.Contains(c, p) {
+							switch p {
+							case "IMQS_scenario":
+								filter = strings.Replace(c, `{`+p+`}`, `'`+session.IMQS_Scenario+`'`, 1)
+							default:
+								filter = ""
+							}
+							break
+						}
+					}
+					query.WriteString(filter)
+					query.WriteString(` AND `)
+				}
+			}
+			query.Truncate(query.Len() - 5)
+			query.WriteString(`) AS r`)
+		}
 
 		// GROUP BY
 		if len(rep.DataSource.ViewTable.Groupings.FieldNames) > 0 {
@@ -138,7 +187,7 @@ func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 			}
 			query.Truncate(query.Len() - 2)
 		}
-		query.WriteString(` LIMIT 10000`)
+		query.WriteString(` LIMIT 100000`)
 
 		db, err := sql.Open("postgres", "dbname=reports user=imqs password=1mq5p@55w0rd host=localhost sslmode=disable")
 		if err != nil {
@@ -146,6 +195,7 @@ func GetReportData(rep report) func(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer db.Close()
+		log.Println(query.String())
 		rows, err := db.Query(query.String())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

@@ -16,10 +16,10 @@ func main() {
 		if k == "" {
 			continue
 		}
-		http.HandleFunc("/"+k+"/data", Reports.GetReportData(report)) // report content data
+		http.HandleFunc("/"+k+"/data", serv.GetReportData(report)) // report content data
 		http.HandleFunc("/"+k+"/pdf", Reports.GeneratePDF(report))    // pdf's
 	}
-	http.HandleFunc("/landingpage", Reports.ListPage(serv.Reports)) // list/directory of reports
+	http.HandleFunc("/landingpage", serv.ListPage()) // list/directory of reports
 
 	http.HandleFunc("/report", Reports.BuildReport)            // report query
 	http.Handle("/", http.FileServer(http.Dir("./front-end"))) // static files

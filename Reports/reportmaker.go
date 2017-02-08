@@ -49,9 +49,15 @@ type conditions struct {
 	Conditions []string `xml:"condition"`
 }
 
+type sessionInfo struct {
+	IMQS_Module   string
+	IMQS_Scenario string
+}
+
 type reportServer struct {
-	Reports reportList
-	Modules []string
+	Reports  reportList
+	Modules  []string
+	Sessions map[string]sessionInfo
 }
 
 func NewReportServer(rootPath string) (reportServer, error) {
@@ -74,5 +80,5 @@ func NewReportServer(rootPath string) (reportServer, error) {
 		}
 		return nil
 	})
-	return reportServer{Reports: rl}, err
+	return reportServer{Reports: rl, Sessions: make(map[string]sessionInfo)}, err
 }
