@@ -1,25 +1,28 @@
 {{ define "layout" }}
 <div class="row">
     <div class="col">
-        <h1>Water - Model Summaries - by Elements</h1>
+        <h1 style="font-size: 2.8rem" class="display-4">Water - Model Summaries - by Elements</h1>
     </div>
 </div>
-<br>
 
-<div class="row print-hide">
-    <div class="col-1">
+<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+    <div class="btn-group mr-2" role="group" aria-label="First group">
+        <button type="button" class="btn btn-secondary">
+            <span class="glyphicon glyphicon-circle-arrow-left" aria-hidden="true"> Back</span>
+        </button>
         <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modal-print">
             <span class="glyphicon glyphicon-save-file" aria-hidden="true"> PDF</span>
         </button>
+        <button type="button" class="btn btn-secondary">More..</button>
     </div>
-    <div class="col-11"></div>
 </div>
+<br>
 
 <div class="modal fade" id="modal-print" tabindex="-1" role="dialog" aria-labelledby="pdf-modal-title" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="pdf-modal-title">Print Report</h5>
+                <h4 class="modal-title" id="pdf-modal-title">Generate PDF Report</h4>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -27,7 +30,7 @@
 
             <div class="modal-body">
                 <div class="row">
-                    <div class="col-4 h5">PDF Orientation</div>
+                    <div class="col-4 h6">PDF Orientation</div>
                     <div class="col-8">
                         <div class="btn-group" data-toggle="buttons" id="pdf-orientation">
                             <label class="btn btn-secondary active">
@@ -41,7 +44,7 @@
                 </div>
                 <br>
                 <div class="row">
-                    <div class="col-4 h5">PDF Size</div>
+                    <div class="col-4 h6">PDF Size</div>
                     <div class="col-8">
                         <div class="btn-group" data-toggle="buttons" id="pdf-size">
                             <label class="btn btn-secondary active">
@@ -58,7 +61,7 @@
                 </div>
                 <br>
                 <div class="row">
-                    <div class="col-4 h5">Layout option</div>
+                    <div class="col-4 h6">Layout option</div>
                     <div class="col-8">
                         <div class="btn-group" data-toggle="buttons" id="pdf-layout">
                             <label class="btn btn-secondary active">
@@ -75,7 +78,6 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary" id="gen-pdf" >Generate PDF</button>
-                <button type="button" class="btn btn-secondary" id="test-pdf">Show Test</button>
             </div>
         </div>
     </div>

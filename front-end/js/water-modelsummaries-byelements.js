@@ -144,13 +144,4 @@ $(function () {
         }
         window.location.href = link;
     });
-
-    $("#test-pdf").on("click", function (e) {
-        var PDFOrientation = $("#pdf-orientation label.active input").val();
-        var PDFSize = $("#pdf-size label.active input").val();
-        console.info({
-            "orientation": PDFOrientation,
-            "size": PDFSize
-        });
-    });
 });
