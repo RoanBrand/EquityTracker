@@ -133,7 +133,7 @@ $(function () {
         }
     });
 
-    $("#gen-pdf").on("click", function () {
+    $("#modal-pdf-generate").on("click", function () {
         var PDFOrientation = $("#pdf-orientation label.active input").val();
         var PDFSize = $("#pdf-size label.active input").val();
         var PDFLayout = $("#pdf-layout label.active input").val();

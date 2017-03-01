@@ -57,36 +57,32 @@ func BuildReport(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
-	name := names[0]
+	reportName := strings.ToLower(names[0])
+
+	tmplBundle := []string{
+		"Reports/templates/htmlbase.tmpl",
+		"Reports/templates/modal-pdf.tmpl",
+		"Reports/templates/" + reportName + "-content.tmpl",
+	}
+	tmplData := struct {
+		Title string
+		Code  string
+	}{names[0], reportName + ".js"}
+
 	flatOptions, ok := q["flat"]
-	flat := false
 	if ok && flatOptions[0] == "t" {
-		flat = true
+		tmplBundle = append(tmplBundle, "Reports/templates/"+reportName+"-flat.tmpl")
+	} else {
+		tmplBundle = append(tmplBundle, "Reports/templates/"+reportName+".tmpl")
 	}
 
-	reportName := strings.ToLower(name)
-	templates := []string{
-		"front-end/templates/reportbase.tmpl",
-		"front-end/templates/" + reportName + "-content.tmpl",
-	}
-	if flat {
-		templates = append(templates, "front-end/templates/"+reportName+"-flat.tmpl")
-	} else {
-		templates = append(templates, "front-end/templates/"+reportName+".tmpl")
-	}
-	t, err := template.ParseFiles(templates...)
+	t, err := template.ParseFiles(tmplBundle...)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	data := struct {
-		Title string
-		Code  string
-	}{name, strings.ToLower(name) + ".js"}
-
-	s := t.Lookup("reportbase.tmpl")
-	err = s.ExecuteTemplate(w, "reportbase", data)
+	err = t.ExecuteTemplate(w, "base", tmplData)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}

@@ -1,0 +1,43 @@
+{{ define "layout" }}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <h1 style="font-size: 2.8rem" class="display-4">Water - Model Summaries - by Elements</h1>
+        </div>
+    </div>
+
+    <div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+        <div class="btn-group mr-2" role="group" aria-label="First group">
+            <button type="button" class="btn btn-secondary">
+                <span class="glyphicon glyphicon-circle-arrow-left" aria-hidden="true"> Back</span>
+            </button>
+            <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#modal-pdf">
+                <span class="glyphicon glyphicon-save-file" aria-hidden="true"> PDF</span>
+            </button>
+            <button type="button" class="btn btn-secondary">More..</button>
+        </div>
+    </div>
+    <br>
+
+    {{ template "modal-pdf" }}
+
+    <ul class="nav nav-tabs print-hide" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" data-toggle="tab" href="#dashboard" role="tab">Dashboard</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" data-toggle="tab" href="#summary" role="tab">Summary</a>
+        </li>
+    </ul>
+
+    <div class="tab-content" style="margin-top: 20px">
+        <div class="tab-pane active" id="dashboard" role="tabpanel">
+            {{ template "content-dashboard" }}
+        </div>
+
+        <div class="tab-pane" id="summary" role="tabpanel">
+            {{ template "content-summary" }}
+        </div>
+    </div>
+</div>
+{{ end }}

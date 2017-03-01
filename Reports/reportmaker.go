@@ -51,7 +51,7 @@ type conditions struct {
 
 type reportServer struct {
 	Reports reportList
-	Modules []string
+	//Modules []string
 }
 
 func NewReportServer(rootPath string) (reportServer, error) {

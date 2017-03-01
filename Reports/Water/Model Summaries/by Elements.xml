@@ -28,4 +28,16 @@
             </filter>
         </viewtable>
     </datasource>
+    <layout>
+        <toolbar></toolbar>
+        <export>PDF</export>
+        <tab>
+            <name>Dashboard</name>
+            <template>content-dashboard</template>
+        </tab>
+        <tab>
+            <name>Summary</name>
+            <template>content-summary</template>
+        </tab>
+    </layout>
 </report>
