@@ -50,7 +50,7 @@ func ListPage(reports reportList) func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func BuildReport(w http.ResponseWriter, r *http.Request) {
+func (rs *reportServer) BuildReport(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	names, ok := q["name"]
 	if !ok {
@@ -59,15 +59,13 @@ func BuildReport(w http.ResponseWriter, r *http.Request) {
 	}
 	reportName := strings.ToLower(names[0])
 
-	tmplBundle := []string{
-		"Reports/templates/htmlbase.tmpl",
-		"Reports/templates/modal-pdf.tmpl",
-		"Reports/templates/" + reportName + "-content.tmpl",
+	reportXML, ok := rs.Reports[reportName]
+	if !ok {
+		http.Error(w, "Requested report not found", http.StatusNotFound)
+		return
 	}
-	tmplData := struct {
-		Title string
-		Code  string
-	}{names[0], reportName + ".js"}
+
+	tmplBundle := []string{"Reports/templates/" + reportName + "-content.tmpl"}
 
 	flatOptions, ok := q["flat"]
 	if ok && flatOptions[0] == "t" {
@@ -82,9 +80,37 @@ func BuildReport(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = t.ExecuteTemplate(w, "base", tmplData)
+	// HTML Base Layout
+	layoutOptions, ok := q["layout"]
+	if ok && layoutOptions[0] == "injectable" {
+		t, err = t.Parse(`{{ define "base" }}{{ template "layout" }}{{ end }}`)
+	} else {
+		t, err = t.ParseFiles("Reports/templates/htmlbase.tmpl")
+	}
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// PDF Generation Modal
+	if reportXML.Layout.Export == "PDF" {
+		t, err = t.ParseFiles("Reports/templates/modal-pdf.tmpl")
+	} else {
+		t, err = t.Parse(`{{ define "modal-pdf" }}{{ end }}`)
+	}
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	tmplData := struct {
+		Title string
+		Code  string
+	}{names[0], reportName + ".js"}
+
+	err = t.ExecuteTemplate(w, "base", tmplData)
+	if err != nil {
+		http.Error(w, "Error executing templates: "+err.Error(), http.StatusInternalServerError)
 	}
 }
 

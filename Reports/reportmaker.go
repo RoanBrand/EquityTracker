@@ -7,8 +7,7 @@ import (
 	"path/filepath"
 )
 
-type reportList map[string]report
-
+// Root Level
 type report struct {
 	Name       string     `xml:"name"`
 	Module     string     `xml:"module"`
@@ -16,8 +15,10 @@ type report struct {
 	Title      string     `xml:"title"`
 	Parameters parameters `xml:"parameters"`
 	DataSource datasource `xml:"datasource"`
+	Layout     layout     `xml:"layout"`
 }
 
+// 1st Level
 type parameters struct {
 	Parameters []string `xml:"parameter"`
 }
@@ -27,6 +28,13 @@ type datasource struct {
 	ViewTable viewTable `xml:"viewtable"`
 }
 
+type layout struct {
+	Toolbar string `xml:"toolbar"`
+	Export  string `xml:"export"`
+	Tabs    []tab  `xml:"tab"`
+}
+
+// 2nd Level
 type viewTable struct {
 	TableName string     `xml:"tablename"`
 	Fields    fields     `xml:"fields"`
@@ -35,6 +43,7 @@ type viewTable struct {
 	Orderings fields     `xml:"ordering"`
 }
 
+// 3rd level and beyond
 type fields struct {
 	FieldNames []field `xml:"field"`
 }
@@ -48,6 +57,18 @@ type field struct {
 type conditions struct {
 	Conditions []string `xml:"condition"`
 }
+
+/*
+type tabs struct {
+	Tabs []tab `xml:"tab"`
+}*/
+
+type tab struct {
+	Name     string `xml:"name"`
+	Template string `xml:"template"`
+}
+
+type reportList map[string]report
 
 type reportServer struct {
 	Reports reportList

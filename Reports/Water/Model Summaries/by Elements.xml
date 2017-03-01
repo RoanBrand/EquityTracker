@@ -29,7 +29,7 @@
         </viewtable>
     </datasource>
     <layout>
-        <toolbar></toolbar>
+        <toolbar>true</toolbar>
         <export>PDF</export>
         <tab>
             <name>Dashboard</name>

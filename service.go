@@ -21,7 +21,7 @@ func main() {
 	}
 	http.HandleFunc("/landingpage", Reports.ListPage(serv.Reports)) // list/directory of reports
 
-	http.HandleFunc("/report", Reports.BuildReport)            // report query
+	http.HandleFunc("/report", serv.BuildReport)            // report query
 	http.Handle("/", http.FileServer(http.Dir("./front-end"))) // static files
 
 	log.Println("Started HTTP Server")
